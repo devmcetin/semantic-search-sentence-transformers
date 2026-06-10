@@ -1,0 +1,6 @@
+pytest
+sentence-transformers
+numpy
+scikit-learn
+watchdog
+requests
