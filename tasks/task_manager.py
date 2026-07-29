@@ -13,6 +13,42 @@ Her fonksiyonun pass kısmını doldur. Testleri çalıştır, hepsi geçene kad
 iterate et: `python watch.py` veya `pytest tests/test_question.py -v`
 """
 
+import numpy as np
+from sentence_transformers import SentenceTransformer, util
+
+texts = [
+    # Password recovery
+    "How do I reset my account password?",
+    "I forgot my password. How can I reset it?",
+
+    # Email update
+    "How can I change the email address linked to my account?",
+    "Update the contact email used for signing in.",
+
+    # Refunds
+    "Requesting a refund for a recent purchase.",
+    "How do I get my money back after buying a product?",
+
+    # Subscription
+    "Cancel my premium subscription.",
+    "Stop automatic renewal of my membership.",
+
+    # Shipping
+    "Track the delivery status of my package.",
+    "Where is my order? I want to check the shipment progress.",
+
+    # Account deletion
+    "Delete my account permanently.",
+    "Remove all my personal data from the service.",
+
+    # Security
+    "Enable two-factor authentication for extra security.",
+    "Protect my account with an additional verification step.",
+
+    # Technical support
+    "The mobile application crashes every time I open it."
+    ]
+
 
 # 1. Doküman koleksiyonunu yükle (koda gömülü)
 def load_documents():
@@ -31,7 +67,8 @@ def load_documents():
     Returns:
         list[str]: doküman metinleri
     """
-    pass
+    
+    return texts
 
 
 # 2. SentenceTransformer modelini yükle
@@ -46,7 +83,8 @@ def build_model():
     - from sentence_transformers import SentenceTransformer
     - return SentenceTransformer("all-MiniLM-L6-v2")
     """
-    pass
+    
+    return SentenceTransformer("all-MiniLM-L6-v2")
 
 
 # 3. Dokümanları embedding'e çevir
@@ -64,7 +102,8 @@ def embed_documents(model, docs):
     İpucu:
     - model.encode(docs, convert_to_numpy=True)
     """
-    pass
+    
+    return model.encode(docs, convert_to_numpy=True)
 
 
 # 4. Sorguyu embedding'e çevir
@@ -82,7 +121,8 @@ def embed_query(model, q):
     İpucu:
     - model.encode(q, convert_to_numpy=True)
     """
-    pass
+    
+    return model.encode(q, convert_to_numpy=True)
 
 
 # 5. Semantik arama — en benzer top_k dokümanı bul
@@ -108,7 +148,13 @@ def semantic_search(model, docs, doc_emb, query, top_k=3):
     - top_idx = np.argsort(scores)[::-1][:top_k]
     - [(docs[i], float(scores[i])) for i in top_idx]
     """
-    pass
+
+    q_emb = embed_query(model, query)
+    
+    scores = util.cos_sim(q_emb, doc_emb)[0].cpu().numpy()
+    top_idx = np.argsort(scores)[::-1][:top_k]
+
+    return [(docs[i], float(scores[i])) for i in top_idx]
 
 
 # 6. Tüm dokümanlar arasında en benzer çifti bul
@@ -131,7 +177,13 @@ def most_similar_pair(model, docs):
     - i, j = np.unravel_index(np.argmax(sim), sim.shape)
     - return (docs[i], docs[j], float(sim[i, j]))
     """
-    pass
+    
+    emb = embed_documents(model, docs)
+    sim = util.cos_sim(emb, emb).cpu().numpy()
+    np.fill_diagonal(sim, -1.0)
+    i, j = np.unravel_index(np.argmax(sim), sim.shape)
+
+    return (docs[i], docs[j], float(sim[i, j]))
 
 
 # 7. Bir skor yeterince ilgili mi?
@@ -148,7 +200,8 @@ def is_relevant(score, threshold=0.4):
 
     İpucu: return bool(score >= threshold)
     """
-    pass
+    
+    return bool(score >= threshold)
 
 
 if __name__ == "__main__":
